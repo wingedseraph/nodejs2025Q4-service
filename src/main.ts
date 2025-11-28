@@ -1,3 +1,4 @@
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule } from '@nestjs/swagger';
 import 'dotenv/config';
@@ -6,13 +7,17 @@ import { AppModule } from './app.module';
 
 const PORT = Number(process.env.PORT) || 4000;
 const SWAGGER_FILE = `${process.cwd()}/doc/api.yaml` as const;
+// const GLOBAL_PREFIX = 'api' as const;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.useGlobalPipes(new ValidationPipe());
+
   const config = YAML.load(SWAGGER_FILE);
   SwaggerModule.setup('api', app, config);
 
+  // app.setGlobalPrefix(GLOBAL_PREFIX);
   await app.listen(PORT);
 }
 bootstrap();
