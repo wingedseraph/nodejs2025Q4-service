@@ -14,7 +14,6 @@ import { CreateUser } from './types/create-user';
 import { UpdateUser } from './types/update-user';
 import { UserService } from './user.service';
 
-// which logic should call on endpoint/method
 @Controller('user')
 export class UserModelController {
   constructor(private readonly userService: UserService) {}
