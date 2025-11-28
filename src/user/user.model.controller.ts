@@ -1,4 +1,17 @@
-import { Controller, Get } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Put,
+} from '@nestjs/common';
+import { CreateUser } from './types/create-user';
+import { UpdateUser } from './types/update-user';
 import { UserService } from './user.service';
 
 // which logic should call on endpoint/method
@@ -7,7 +20,30 @@ export class UserModelController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
-  getHello(): string {
-    return this.userService.getHello();
+  findAll() {
+    return this.userService.findAll();
+  }
+
+  @Get(':id')
+  findById(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+    return this.userService.findById(id);
+  }
+
+  @Post()
+  create(@Body() createUser: CreateUser) {
+    return this.userService.createUser(createUser);
+  }
+
+  @Put(':id') updatePassword(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() updateUser: UpdateUser,
+  ) {
+    return this.userService.updatePassword(id, updateUser);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteUser(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+    this.userService.deleteUser(id);
   }
 }
