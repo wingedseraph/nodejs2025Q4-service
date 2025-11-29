@@ -50,4 +50,26 @@ export class TrackService {
 
     return this.tracks.delete(id);
   }
+  findTracksByAlbumId(albumId: string) {
+    return Array.from(this.tracks.values()).filter(
+      (track) => track.albumId === albumId,
+    );
+  }
+
+  findTracksByArtistId(artistId: string) {
+    return Array.from(this.tracks.values()).filter(
+      (track) => track.artistId === artistId,
+    );
+  }
+
+  removeAlbumFromTracks(albumId: string) {
+    const tracks = this.findTracksByAlbumId(albumId);
+
+    tracks.forEach((track) => (track.albumId = null));
+  }
+  removeArtistFromTracks(artistId: string) {
+    const artists = this.findTracksByArtistId(artistId);
+
+    artists.forEach((artist) => (artist.artistId = null));
+  }
 }
