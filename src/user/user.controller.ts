@@ -15,7 +15,7 @@ import { UpdateUser } from './types/update-user';
 import { UserService } from './user.service';
 
 @Controller('user')
-export class UserModelController {
+export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
