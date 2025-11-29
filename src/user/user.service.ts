@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { checkOldPassword, checkRecordExists } from '../utils/checks';
-import { CreateUser } from './types/create-user';
-import { UpdateUser } from './types/update-user';
+import { CreateUser } from './types/create-user.types';
+import { UpdateUser } from './types/update-user.types';
 import { UserModel } from './user.model';
 
 @Injectable()

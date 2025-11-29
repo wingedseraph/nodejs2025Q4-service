@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { checkRecordExists } from '../utils/checks';
 import { AlbumModel } from './album.model';
-import { Album } from './types/album';
+import { Album } from './types/album.types';
 
 @Injectable()
 export class AlbumService {

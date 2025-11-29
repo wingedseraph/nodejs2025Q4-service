@@ -10,8 +10,8 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { CreateUser } from './types/create-user';
-import { UpdateUser } from './types/update-user';
+import { CreateUser } from './types/create-user.types';
+import { UpdateUser } from './types/update-user.types';
 import { UserService } from './user.service';
 
 @Controller('user')

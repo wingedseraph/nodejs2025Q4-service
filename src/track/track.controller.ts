@@ -11,7 +11,7 @@ import {
   Put,
 } from '@nestjs/common';
 import { TrackService } from './track.service';
-import { Track } from './types/track';
+import { Track } from './types/track.types';
 
 @Controller('track')
 export class TrackController {

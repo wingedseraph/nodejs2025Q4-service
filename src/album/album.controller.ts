@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { TrackService } from '../track/track.service';
 import { AlbumService } from './album.service';
-import { Album } from './types/album';
+import { Album } from './types/album.types';
 
 @Controller('album')
 export class AlbumController {

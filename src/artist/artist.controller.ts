@@ -13,7 +13,7 @@ import {
 import { AlbumService } from '../album/album.service';
 import { TrackService } from '../track/track.service';
 import { ArtistService } from './artist.service';
-import { Artist } from './types/artist';
+import { Artist } from './types/artist.types';
 
 @Controller('artist')
 export class ArtistController {

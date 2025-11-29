@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { checkRecordExists } from '../utils/checks';
 import { TrackModel } from './track.model';
-import { Track } from './types/track';
+import { Track } from './types/track.types';
 
 @Injectable()
 export class TrackService {

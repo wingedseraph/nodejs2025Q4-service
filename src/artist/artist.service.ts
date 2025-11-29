@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { checkRecordExists } from '../utils/checks';
 import { ArtistModel } from './artist.model';
-import { Artist } from './types/artist';
+import { Artist } from './types/artist.types';
 
 @Injectable()
 export class ArtistService {
