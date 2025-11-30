@@ -34,7 +34,7 @@ export class AlbumController {
     return this.albumService.createAlbum(crateAlbum);
   }
 
-  @Put(':id') updatePassword(
+  @Put(':id') updateAlbum(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() updateAlbum: Album,
   ) {

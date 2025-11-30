@@ -9,13 +9,8 @@ import { FAVORITES_MESSAGES, GENERIC_ERRORS } from '../const/messages';
 import { TrackService } from '../track/track.service';
 import { FavoritesModel } from './favorites.model';
 
-// todo:
-// When you delete Artist, Album or Track, it's id should be deleted from favorites (if was there) and references to it in other entities should become null. For example: Artist is deleted => this artistId in corresponding Albums's and Track's become null + this artist's id is deleted from favorites, same logic for Album and Track.
-// Non-existing entity can't be added to Favorites.
-
 @Injectable()
 export class FavoritesService {
-  private readonly favorites = new Map<string, FavoritesModel>();
   private readonly favoritesTrackIds = new Set<string>();
   private readonly favoritesAlbumIds = new Set<string>();
   private readonly favoritesArtistIds = new Set<string>();

@@ -31,7 +31,7 @@ export class TrackController {
     return this.trackService.createTrack(createTrack);
   }
 
-  @Put(':id') updatePassword(
+  @Put(':id') updateTrack(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() updateTrack: Track,
   ) {

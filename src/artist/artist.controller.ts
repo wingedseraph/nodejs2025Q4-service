@@ -36,7 +36,7 @@ export class ArtistController {
     return this.artistService.createArtist(createArtist);
   }
 
-  @Put(':id') updatePassword(
+  @Put(':id') updateArtist(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() updateArtist: Artist,
   ) {
