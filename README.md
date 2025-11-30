@@ -10,6 +10,10 @@
 ```bash
 npm install
 ```
+## Environment variables
+```bash
+cp .env.example .env
+```
 
 ## Running
 
