@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { checkOldPassword, checkRecordExists } from '../utils/checks';
+import { checkOldPassword, checkUserExists } from '../utils/checks';
 import { CreateUser } from './types/create-user.types';
 import { UpdateUser } from './types/update-user.types';
 import { UserModel } from './user.model';
@@ -25,7 +25,7 @@ export class UserService {
   findById(id: string) {
     const user = this.users.get(id);
 
-    checkRecordExists(user);
+    checkUserExists(user);
 
     return this.userWithoutPassword(user);
   }
@@ -40,7 +40,7 @@ export class UserService {
   updatePassword(id: string, updatePassword: UpdateUser) {
     const user = this.users.get(id);
 
-    checkRecordExists(user);
+    checkUserExists(user);
     checkOldPassword(user.password, updatePassword.oldPassword);
 
     user.password = updatePassword.newPassword;
@@ -55,7 +55,7 @@ export class UserService {
   deleteUser(id: string) {
     const user = this.users.get(id);
 
-    checkRecordExists(user);
+    checkUserExists(user);
 
     return this.users.delete(id);
   }

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { checkRecordExists } from '../utils/checks';
+import { checkUserExists } from '../utils/checks';
 import { AlbumModel } from './album.model';
 import { Album } from './types/album.types';
 
@@ -13,7 +13,7 @@ export class AlbumService {
 
   findById(id: string) {
     const album = this.albums.get(id);
-    checkRecordExists(album);
+    checkUserExists(album);
 
     return album;
   }
@@ -32,7 +32,7 @@ export class AlbumService {
   updateAlbum(id: string, updateAlbum: Album) {
     const album = this.albums.get(id);
 
-    checkRecordExists(album);
+    checkUserExists(album);
 
     album.name = updateAlbum.name;
     album.year = updateAlbum.year;
@@ -45,7 +45,7 @@ export class AlbumService {
   deleteAlbum(id: string) {
     const album = this.albums.get(id);
 
-    checkRecordExists(album);
+    checkUserExists(album);
 
     return this.albums.delete(id);
   }

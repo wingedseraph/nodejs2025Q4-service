@@ -1,12 +1,16 @@
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { USER_ERRORS } from '../const/messages';
+import {
+  ForbiddenException,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
+import { GENERIC_ERRORS, USER_ERRORS } from '../const/messages';
 
-export function checkRecordExists<T>(
-  record: T | undefined,
-  errorMessage = USER_ERRORS.NOT_FOUND_ERROR,
-): asserts record is T {
-  if (!record) {
-    throw new NotFoundException(errorMessage);
+export function checkUserExists<T>(
+  user: T | undefined,
+  errorMessage?: string,
+): asserts user is T {
+  if (!user) {
+    throw new NotFoundException(errorMessage ?? USER_ERRORS.NOT_FOUND_ERROR);
   }
 }
 
@@ -17,5 +21,16 @@ export function checkOldPassword(
 ): void {
   if (actualPassword !== providedPassword) {
     throw new ForbiddenException(errorMessage);
+  }
+}
+
+export function checkTrackExists<T>(
+  track: T | undefined,
+  errorMessage?: string,
+) {
+  if (!track) {
+    throw new UnprocessableEntityException(
+      errorMessage ?? GENERIC_ERRORS.NOT_FOUND_ERROR,
+    );
   }
 }

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { checkRecordExists } from '../utils/checks';
+import { checkUserExists } from '../utils/checks';
 import { ArtistModel } from './artist.model';
 import { Artist } from './types/artist.types';
 
@@ -13,7 +13,7 @@ export class ArtistService {
 
   findById(id: string) {
     const artist = this.artists.get(id);
-    checkRecordExists(artist);
+    checkUserExists(artist);
 
     return artist;
   }
@@ -28,7 +28,7 @@ export class ArtistService {
   updateArtist(id: string, updateArtist: Artist) {
     const artist = this.artists.get(id);
 
-    checkRecordExists(artist);
+    checkUserExists(artist);
 
     artist.name = updateArtist.name;
     artist.grammy = updateArtist.grammy;
@@ -40,7 +40,7 @@ export class ArtistService {
   deleteArtist(id: string) {
     const artist = this.artists.get(id);
 
-    checkRecordExists(artist);
+    checkUserExists(artist);
 
     return this.artists.delete(id);
   }

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { checkRecordExists } from '../utils/checks';
+import { checkUserExists } from '../utils/checks';
 import { TrackModel } from './track.model';
 import { Track } from './types/track.types';
 
@@ -13,7 +13,7 @@ export class TrackService {
 
   findById(id: string) {
     const track = this.tracks.get(id);
-    checkRecordExists(track);
+    checkUserExists(track);
     return track;
   }
 
@@ -32,7 +32,7 @@ export class TrackService {
   updateTrack(id: string, updateTrack: Track) {
     const track = this.tracks.get(id);
 
-    checkRecordExists(track);
+    checkUserExists(track);
 
     track.name = updateTrack.name;
     track.artistId = updateTrack.artistId;
@@ -46,7 +46,7 @@ export class TrackService {
   deleteTrack(id: string) {
     const track = this.tracks.get(id);
 
-    checkRecordExists(track);
+    checkUserExists(track);
 
     return this.tracks.delete(id);
   }
