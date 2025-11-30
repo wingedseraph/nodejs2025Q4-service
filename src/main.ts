@@ -15,7 +15,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
 
   const config = YAML.load(SWAGGER_FILE);
-  SwaggerModule.setup('api', app, config);
+  SwaggerModule.setup('doc', app, config);
 
   // app.setGlobalPrefix(GLOBAL_PREFIX);
   await app.listen(PORT);
