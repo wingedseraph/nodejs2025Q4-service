@@ -1,21 +1,23 @@
-import { randomUUID } from 'node:crypto';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
+@Entity('user')
 export class UserModel {
+  @PrimaryGeneratedColumn('uuid')
   id: string; // uuid v4
+  @Column()
   login: string;
+  @Column()
   password: string;
+  @Column({ type: 'integer', default: 1 })
   version: number; // integer number, increments on update
-  createdAt: number; // timestamp of creation
-  updatedAt: number; // timestamp of last update
-
-  constructor(login: string, password: string) {
-    const timestamp = Date.now();
-
-    this.id = randomUUID();
-    this.login = login;
-    this.password = password;
-    this.version = 1;
-    this.createdAt = timestamp;
-    this.updatedAt = timestamp;
-  }
+  @CreateDateColumn({ type: 'timestamp with time zone' })
+  createdAt: Date; // timestamp of creation
+  @UpdateDateColumn({ type: 'timestamp with time zone' })
+  updatedAt: Date; // timestamp of last update
 }
