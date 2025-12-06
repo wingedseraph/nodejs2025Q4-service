@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { checkOldPassword } from '../utils/checks';
+import { checkOldPassword, checkRecordExistsById } from '../utils/checks';
 import { CreateUser } from './types/create-user.types';
 import { UpdateUser } from './types/update-user.types';
 import { UserModel } from './user.model';
@@ -31,9 +31,7 @@ export class UserService {
   async findById(id: string) {
     const user = await this.userRepository.findOne({ where: { id } });
 
-    if (!user) {
-      throw new NotFoundException(`User with id ${id} not found`);
-    }
+    checkRecordExistsById(user, id);
 
     return this.userWithoutPassword(user);
   }
@@ -47,10 +45,8 @@ export class UserService {
 
   async updatePassword(id: string, updatePassword: UpdateUser) {
     const user = await this.userRepository.findOne({ where: { id } });
-    if (!user) {
-      throw new NotFoundException(`User with id ${id} not found`);
-    }
 
+    checkRecordExistsById(user, id);
     checkOldPassword(user.password, updatePassword.oldPassword);
 
     user.password = updatePassword.newPassword;
