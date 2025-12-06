@@ -1,22 +1,15 @@
-import { randomUUID } from 'node:crypto';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
+@Entity('track')
 export class TrackModel {
+  @PrimaryGeneratedColumn('uuid')
   id: string; // uuid v4
+  @Column()
   name: string;
+  @Column({ nullable: true })
   artistId: string | null; // refers to Artist
+  @Column({ nullable: true })
   albumId: string | null; // refers to Album
+  @Column({ type: 'integer' })
   duration: number; // integer number
-
-  constructor(
-    name: string,
-    artistId: string | null,
-    albumId: string | null,
-    duration: number,
-  ) {
-    this.id = randomUUID();
-    this.name = name;
-    this.artistId = artistId;
-    this.albumId = albumId;
-    this.duration = duration;
-  }
 }

@@ -1,75 +1,84 @@
-import { Injectable } from '@nestjs/common';
-import { checkUserExists } from '../utils/checks';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { checkRecordExistsById } from '../utils/checks';
 import { TrackModel } from './track.model';
 import { Track } from './types/track.types';
 
 @Injectable()
 export class TrackService {
-  private readonly tracks = new Map<string, TrackModel>();
+  constructor(
+    @InjectRepository(TrackModel)
+    private trackRepository: Repository<TrackModel>,
+  ) {}
 
-  findAll() {
-    return Array.from(this.tracks.values());
+  async findAll() {
+    const tracks = await this.trackRepository.find();
+
+    console.log('tracks', tracks);
+    return tracks;
   }
 
-  findById(id: string) {
-    const track = this.tracks.get(id);
-    checkUserExists(track);
+  async findById(id: string) {
+    const track = await this.trackRepository.findOne({ where: { id } });
+
+    checkRecordExistsById(track, id);
+
     return track;
   }
 
-  createTrack(createTrack: Track) {
-    const newTrack = new TrackModel(
-      createTrack.name,
-      createTrack.artistId,
-      createTrack.albumId,
-      createTrack.duration,
-    );
-    this.tracks.set(newTrack.id, newTrack);
+  async createTrack(createTrack: Track) {
+    const newTrack = this.trackRepository.create(createTrack);
+    const createdTrack = await this.trackRepository.save(newTrack);
 
-    return this.tracks.get(newTrack.id);
+    return createdTrack;
   }
 
-  updateTrack(id: string, updateTrack: Track) {
-    const track = this.tracks.get(id);
+  async updateTrack(id: string, updateTrack: Track) {
+    const track = await this.trackRepository.findOne({ where: { id } });
 
-    checkUserExists(track);
+    checkRecordExistsById(track, id);
 
     track.name = updateTrack.name;
     track.artistId = updateTrack.artistId;
     track.albumId = updateTrack.albumId;
     track.duration = updateTrack.duration;
 
-    this.tracks.set(id, track);
+    const updatedTrack = await this.trackRepository.save(track);
 
-    return this.tracks.get(id);
+    return updatedTrack;
   }
-  deleteTrack(id: string) {
-    const track = this.tracks.get(id);
+  async deleteTrack(id: string) {
+    const result = await this.trackRepository.delete(id);
 
-    checkUserExists(track);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Track with id ${id} not found`);
+    }
 
-    return this.tracks.delete(id);
+    return true;
   }
-  findTracksByAlbumId(albumId: string) {
-    return Array.from(this.tracks.values()).filter(
-      (track) => track.albumId === albumId,
-    );
-  }
-
-  findTracksByArtistId(artistId: string) {
-    return Array.from(this.tracks.values()).filter(
-      (track) => track.artistId === artistId,
-    );
+  async findTracksByAlbumId(albumId: string) {
+    const tracks = await this.trackRepository.find();
+    return Array.from(tracks).filter((track) => track.albumId === albumId);
   }
 
-  removeAlbumFromTracks(albumId: string) {
-    const tracks = this.findTracksByAlbumId(albumId);
+  async findTracksByArtistId(artistId: string) {
+    const tracks = await this.trackRepository.find();
+    return Array.from(tracks).filter((track) => track.artistId === artistId);
+  }
+
+  async removeAlbumFromTracks(albumId: string) {
+    const tracks = await this.findTracksByAlbumId(albumId);
 
     tracks.forEach((track) => (track.albumId = null));
-  }
-  removeArtistFromTracks(artistId: string) {
-    const artists = this.findTracksByArtistId(artistId);
 
-    artists.forEach((artist) => (artist.artistId = null));
+    await this.trackRepository.save(tracks);
+  }
+  async removeArtistFromTracks(artistId: string) {
+    const tracks = await this.findTracksByArtistId(artistId);
+
+    tracks.forEach((track) => (track.artistId = null));
+
+    await this.trackRepository.save(tracks);
   }
 }
