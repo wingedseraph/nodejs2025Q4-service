@@ -15,7 +15,6 @@ export class TrackService {
   async findAll() {
     const tracks = await this.trackRepository.find();
 
-    console.log('tracks', tracks);
     return tracks;
   }
 
