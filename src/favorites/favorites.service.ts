@@ -1,143 +1,147 @@
-import {
-  HttpException,
-  Injectable,
-  UnprocessableEntityException,
-} from '@nestjs/common';
-import { AlbumService } from '../album/album.service';
-import { ArtistService } from '../artist/artist.service';
-import { FAVORITES_MESSAGES, GENERIC_ERRORS } from '../const/messages';
-import { TrackService } from '../track/track.service';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { AlbumModel } from '../album/album.model';
+import { ArtistModel } from '../artist/artist.model';
+import { TrackModel } from '../track/track.model';
+import { checkEntityExistsById, checkRecordExistsById } from '../utils/checks';
 import { FavoritesModel } from './favorites.model';
 
 @Injectable()
 export class FavoritesService {
-  private readonly favoritesTrackIds = new Set<string>();
-  private readonly favoritesAlbumIds = new Set<string>();
-  private readonly favoritesArtistIds = new Set<string>();
-
   constructor(
-    private readonly artistService: ArtistService,
-    private readonly albumService: AlbumService,
-    private readonly trackService: TrackService,
+    @InjectRepository(FavoritesModel)
+    private favoritesRepository: Repository<FavoritesModel>,
+    @InjectRepository(ArtistModel)
+    private artistRepository: Repository<ArtistModel>,
+    @InjectRepository(AlbumModel)
+    private albumRepository: Repository<AlbumModel>,
+    @InjectRepository(TrackModel)
+    private trackRepository: Repository<TrackModel>,
   ) {}
 
-  findAll() {
+  private async getOrCreateFavorites() {
+    const [favorites] = await this.favoritesRepository.find({
+      relations: ['artists', 'albums', 'tracks'],
+      take: 1,
+    });
+
+    if (!favorites) {
+      const newFavorites = this.favoritesRepository.create({
+        artists: [],
+        albums: [],
+        tracks: [],
+      });
+      return await this.favoritesRepository.save(newFavorites);
+    }
+
+    return favorites;
+  }
+
+  async findAll() {
+    const favorites = await this.getOrCreateFavorites();
     return {
-      artists: this.artistService
-        .findAll()
-        .filter((artist) => this.favoritesArtistIds.has(artist.id)),
-      albums: this.albumService
-        .findAll()
-        .filter((album) => this.favoritesAlbumIds.has(album.id)),
-      tracks: this.trackService
-        .findAll()
-        .filter((track) => this.favoritesTrackIds.has(track.id)),
+      artists: favorites.artists || [],
+      albums: favorites.albums || [],
+      tracks: favorites.tracks || [],
     };
   }
 
-  addTrack(trackId: string) {
-    try {
-      this.trackService.findById(trackId);
-    } catch (err) {
-      if (err instanceof HttpException && err.getStatus() === 404) {
-        throw new UnprocessableEntityException(GENERIC_ERRORS.NOT_FOUND_ERROR);
-      }
-      throw err;
+  async addTrack(trackId: string) {
+    const track = await this.trackRepository.findOne({
+      where: { id: trackId },
+    });
+
+    checkEntityExistsById(track, trackId);
+
+    const favorites = await this.getOrCreateFavorites();
+    const trackExists = favorites.tracks.some((track) => track.id === trackId);
+
+    if (!trackExists) {
+      favorites.tracks.push(track);
+      await this.favoritesRepository.save(favorites);
     }
-
-    this.favoritesTrackIds.add(trackId);
-
-    return { message: FAVORITES_MESSAGES.SUCCESSFUL_ADDED };
-  }
-  addAlbum(albumId: string) {
-    try {
-      this.albumService.findById(albumId);
-    } catch (err) {
-      if (err instanceof HttpException && err.getStatus() === 404) {
-        throw new UnprocessableEntityException(GENERIC_ERRORS.NOT_FOUND_ERROR);
-      }
-      throw err;
-    }
-
-    this.favoritesAlbumIds.add(albumId);
-
-    return { message: FAVORITES_MESSAGES.SUCCESSFUL_ADDED };
-  }
-  addArtist(artistId: string) {
-    try {
-      this.artistService.findById(artistId);
-    } catch (err) {
-      if (err instanceof HttpException && err.getStatus() === 404) {
-        throw new UnprocessableEntityException(GENERIC_ERRORS.NOT_FOUND_ERROR);
-      }
-      throw err;
-    }
-
-    this.favoritesArtistIds.add(artistId);
-
-    return { message: FAVORITES_MESSAGES.SUCCESSFUL_ADDED };
-  }
-  deleteTrack(trackId: string) {
-    try {
-      this.trackService.findById(trackId);
-    } catch (err) {
-      if (err instanceof HttpException && err.getStatus() === 404) {
-        throw new UnprocessableEntityException(GENERIC_ERRORS.NOT_FOUND_ERROR);
-      }
-      throw err;
-    }
-
-    this.favoritesTrackIds.delete(trackId);
-
-    return { message: FAVORITES_MESSAGES.SUCCESSFUL_DELETED };
-  }
-  deleteAlbum(albumId: string) {
-    try {
-      this.albumService.findById(albumId);
-    } catch (err) {
-      if (err instanceof HttpException && err.getStatus() === 404) {
-        throw new UnprocessableEntityException(GENERIC_ERRORS.NOT_FOUND_ERROR);
-      }
-      throw err;
-    }
-
-    this.favoritesAlbumIds.delete(albumId);
-
-    return { message: FAVORITES_MESSAGES.SUCCESSFUL_DELETED };
-  }
-  deleteArtist(artistId: string) {
-    try {
-      this.artistService.findById(artistId);
-    } catch (err) {
-      if (err instanceof HttpException && err.getStatus() === 404) {
-        throw new UnprocessableEntityException(GENERIC_ERRORS.NOT_FOUND_ERROR);
-      }
-      throw err;
-    }
-
-    this.favoritesArtistIds.delete(artistId);
-
-    return { message: FAVORITES_MESSAGES.SUCCESSFUL_DELETED };
   }
 
-  // DELETE /favs/track/:id - delete track from favorites
-  // Server should answer with status code 204 if the track was in favorites and now it's deleted id is found and deleted
-  // Server should answer with status code 400 and corresponding message if trackId is invalid (not uuid)
-  // Server should answer with status code 404 and corresponding message if corresponding track is not favorite
-  // POST /favs/album/:id - add album to the favorites
-  // Server should answer with status code 201 and corresponding message if album with id === albumId exists
-  // Server should answer with status code 400 and corresponding message if albumId is invalid (not uuid)
-  // Server should answer with status code 422 and corresponding message if album with id === albumId doesn't exist
-  // DELETE /favs/album/:id - delete album from favorites
-  // Server should answer with status code 204 if the album was in favorites and now it's deleted id is found and deleted
-  // Server should answer with status code 400 and corresponding message if albumId is invalid (not uuid)
-  // Server should answer with status code 404 and corresponding message if corresponding album is not favorite
-  // POST /favs/artist/:id - add artist to the favorites
-  // Server should answer with status code 201 and corresponding message if artist with id === artistId exists
-  // Server should answer with status code 400 and corresponding message if artistId is invalid (not uuid)
-  // Server should answer with status code 422 and corresponding message if artist with id === artistId doesn't exist
-  // DELETE /favs/artist/:id - delete artist from favorites
-  // Server should answer with status code 204 if the artist was in favorites and now it's deleted id is found and deleted
-  // Server should answer with status code 400 and corresponding message if artistId is invalid (not uuid)
-  // Server should answer with status code 404 and corresponding message if corresponding artist is not favorite
+  async addAlbum(albumId: string) {
+    const album = await this.albumRepository.findOne({
+      where: { id: albumId },
+    });
+
+    checkEntityExistsById(album, albumId);
+
+    const favorites = await this.getOrCreateFavorites();
+    const albumExists = favorites.albums.some((album) => album.id === albumId);
+
+    if (!albumExists) {
+      favorites.albums.push(album);
+      await this.favoritesRepository.save(favorites);
+    }
+  }
+
+  async addArtist(artistId: string) {
+    const artist = await this.artistRepository.findOne({
+      where: { id: artistId },
+    });
+
+    checkEntityExistsById(artist, artistId);
+
+    const favorites = await this.getOrCreateFavorites();
+    const artistExists = favorites.artists.some(
+      (artist) => artist.id === artistId,
+    );
+
+    if (!artistExists) {
+      favorites.artists.push(artist);
+      await this.favoritesRepository.save(favorites);
+    }
+  }
+
+  async deleteTrack(trackId: string) {
+    const track = await this.trackRepository.findOne({
+      where: { id: trackId },
+    });
+
+    checkRecordExistsById(track, trackId, 'Track not found');
+
+    const favorites = await this.getOrCreateFavorites();
+    const trackIndex = favorites.tracks.findIndex(
+      (track) => track.id === trackId,
+    );
+
+    favorites.tracks.splice(trackIndex, 1);
+    await this.favoritesRepository.save(favorites);
+  }
+
+  async deleteAlbum(albumId: string) {
+    const album = await this.albumRepository.findOne({
+      where: { id: albumId },
+    });
+
+    checkRecordExistsById(album, albumId, 'Album not found');
+
+    const favorites = await this.getOrCreateFavorites();
+    const albumIndex = favorites.albums.findIndex(
+      (album) => album.id === albumId,
+    );
+
+    favorites.albums.splice(albumIndex, 1);
+    await this.favoritesRepository.save(favorites);
+  }
+
+  async deleteArtist(artistId: string) {
+    const artist = await this.artistRepository.findOne({
+      where: { id: artistId },
+    });
+
+    checkRecordExistsById(artist, artistId, 'Artist not found');
+
+    const favorites = await this.getOrCreateFavorites();
+    const artistIndex = favorites.artists.findIndex(
+      (artist) => artist.id === artistId,
+    );
+
+    favorites.artists.splice(artistIndex, 1);
+    await this.favoritesRepository.save(favorites);
+  }
 }

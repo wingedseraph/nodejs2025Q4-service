@@ -7,7 +7,6 @@ import { AppModule } from './app.module';
 
 const PORT = Number(process.env.PORT) || 4000;
 const SWAGGER_FILE = `${process.cwd()}/doc/api.yaml` as const;
-// const GLOBAL_PREFIX = 'api' as const;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,7 +16,6 @@ async function bootstrap() {
   const config = YAML.load(SWAGGER_FILE);
   SwaggerModule.setup('doc', app, config);
 
-  // app.setGlobalPrefix(GLOBAL_PREFIX);
   await app.listen(PORT);
 }
 bootstrap();

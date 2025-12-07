@@ -1,30 +1,37 @@
 # Home Library Service
 
-## Requirements
+## Prerequisites
 
-- Node.js >= 22.14.0
-- npm
+- [Docker](https://docs.docker.com/engine/install/) installed
+- [Docker Compose](https://docs.docker.com/compose/install/) installed
+- Docker Hub account created
 
-## Installation
+## Environment Variables
 
-```bash
-npm install
-```
-## Environment variables
-```bash
-cp .env.example .env
-```
+Copy a `.env.example` file to `.env` in the project root:
 
-## Running
+## Start the application
 
-```bash
-npm run start:dev
-```
+`docker-compose up --build` The application will be available at `http://localhost:4000`
 
-Application runs on port 4000 by default. API documentation available at http://localhost:4000/doc/
+API documentation: `http://localhost:4000/doc/`
+
+## Stop the application
+
+`docker-compose down`
+
+## Scanning for Vulnerabilities
+
+`npm run docker:scan`
+
+## Development
+
+The application runs in development mode with hot reload. Changes to files in `src/` will automatically restart the application.
 
 ## Testing
 
-```bash
-npm run test
-```
+`npm run test`
+
+## Run tests inside the container
+
+`docker-compose exec app npm run test`

@@ -1,22 +1,32 @@
-import { randomUUID } from 'node:crypto';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { AlbumModel } from '../album/album.model';
+import { ArtistModel } from '../artist/artist.model';
 
+@Entity('track')
 export class TrackModel {
+  @PrimaryGeneratedColumn('uuid')
   id: string; // uuid v4
+  @Column()
   name: string;
-  artistId: string | null; // refers to Artist
-  albumId: string | null; // refers to Album
-  duration: number; // integer number
 
-  constructor(
-    name: string,
-    artistId: string | null,
-    albumId: string | null,
-    duration: number,
-  ) {
-    this.id = randomUUID();
-    this.name = name;
-    this.artistId = artistId;
-    this.albumId = albumId;
-    this.duration = duration;
-  }
+  @ManyToOne(() => ArtistModel, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'artistId' })
+  artist: ArtistModel | null;
+  @Column({ nullable: true })
+  artistId: string | null; // refers to Artist
+
+  @ManyToOne(() => AlbumModel, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'albumId' })
+  album: AlbumModel | null;
+  @Column({ nullable: true })
+  albumId: string | null; // refers to Album
+
+  @Column({ type: 'integer' })
+  duration: number; // integer number
 }

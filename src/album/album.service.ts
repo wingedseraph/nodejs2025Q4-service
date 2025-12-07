@@ -1,65 +1,78 @@
-import { Injectable } from '@nestjs/common';
-import { checkUserExists } from '../utils/checks';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { checkRecordExistsById } from '../utils/checks';
 import { AlbumModel } from './album.model';
 import { Album } from './types/album.types';
 
 @Injectable()
 export class AlbumService {
-  private readonly albums = new Map<string, AlbumModel>();
+  constructor(
+    @InjectRepository(AlbumModel)
+    private albumRepository: Repository<AlbumModel>,
+  ) {}
 
-  findAll() {
-    return Array.from(this.albums.values());
+  async findAll() {
+    return await this.albumRepository.find();
   }
 
-  findById(id: string) {
-    const album = this.albums.get(id);
-    checkUserExists(album);
+  async findById(id: string) {
+    const album = await this.albumRepository.findOne({ where: { id } });
+
+    checkRecordExistsById(album, id);
 
     return album;
   }
 
-  createAlbum(createAlbum: Album) {
-    const newAlbum = new AlbumModel(
-      createAlbum.name,
-      createAlbum.year,
-      createAlbum.artistId,
-    );
-    this.albums.set(newAlbum.id, newAlbum);
+  async createAlbum(createAlbum: Album) {
+    const newAlbum = this.albumRepository.create({
+      name: createAlbum.name,
+      year: createAlbum.year,
+      artistId: createAlbum.artistId ?? null,
+    });
 
-    return this.albums.get(newAlbum.id);
+    const createdAlbum = await this.albumRepository.save(newAlbum);
+
+    return createdAlbum;
   }
 
-  updateAlbum(id: string, updateAlbum: Album) {
-    const album = this.albums.get(id);
+  async updateAlbum(id: string, updateAlbum: Album) {
+    const album = await this.albumRepository.findOne({ where: { id } });
 
-    checkUserExists(album);
+    checkRecordExistsById(album, id);
 
     album.name = updateAlbum.name;
     album.year = updateAlbum.year;
-    album.artistId = updateAlbum.artistId;
+    album.artistId = updateAlbum.artistId ?? null;
 
-    this.albums.set(id, album);
+    const updatedAlbum = await this.albumRepository.save(album);
 
-    return this.albums.get(id);
-  }
-  deleteAlbum(id: string) {
-    const album = this.albums.get(id);
-
-    checkUserExists(album);
-
-    return this.albums.delete(id);
+    return updatedAlbum;
   }
 
-  findAlbumsByArtistId(artistId: string) {
-    return Array.from(this.albums.values()).filter(
-      (album) => album.artistId === artistId,
-    );
+  async deleteAlbum(id: string) {
+    const result = await this.albumRepository.delete(id);
+
+    if (result.affected === 0) {
+      throw new NotFoundException(`Album with ID ${id} not found`);
+    }
+
+    return true;
   }
 
-  removeArtistFromAlbums(artistId: string) {
-    const albums = this.findAlbumsByArtistId(artistId);
+  async findAlbumsByArtistId(artistId: string) {
+    return await this.albumRepository.find({
+      where: { artistId },
+    });
+  }
+
+  async removeArtistFromAlbums(artistId: string) {
+    const albums = await this.findAlbumsByArtistId(artistId);
     albums.forEach((album) => {
       album.artistId = null;
     });
+
+    const updatedAlbums = await this.albumRepository.save(albums);
+    return updatedAlbums;
   }
 }

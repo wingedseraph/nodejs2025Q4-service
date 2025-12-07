@@ -1,0 +1,44 @@
+networks:
+  home-library-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: postgres_data
+  postgres_logs:
+    name: postgres_logs
+
+services:
+  postgres:
+    image: postgres:alpine
+    container_name: home-library-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - postgres_logs:/var/log/postgresql
+    networks:
+      - home-library-network
+    ports:
+      - '${DB_PORT:-5432}:5432'
+
+  app:
+    build: .
+    container_name: home-library-app
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - '${PORT:-4000}:${PORT:-4000}'
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/dist
+    command: sh -c "npm ci && npm run migration:run && npm run start:dev"
+    env_file:
+      - .env
+    networks:
+      - home-library-network
