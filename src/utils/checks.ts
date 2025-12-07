@@ -3,7 +3,7 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { GENERIC_ERRORS, USER_ERRORS } from '../const/messages';
+import { USER_ERRORS } from '../const/messages';
 
 export function checkRecordExistsById<T>(
   entity: T | undefined,
@@ -27,13 +27,14 @@ export function checkOldPassword(
   }
 }
 
-export function checkTrackExists<T>(
-  track: T | undefined,
+export function checkEntityExistsById<T>(
+  entity: T | undefined,
+  id: string,
   errorMessage?: string,
 ) {
-  if (!track) {
+  if (!entity) {
     throw new UnprocessableEntityException(
-      errorMessage ?? GENERIC_ERRORS.NOT_FOUND_ERROR,
+      errorMessage ?? `${entity} with id ${id} not found`,
     );
   }
 }
