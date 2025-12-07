@@ -1,47 +1,54 @@
-import { Injectable } from '@nestjs/common';
-import { checkUserExists } from '../utils/checks';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { checkRecordExistsById } from '../utils/checks';
 import { ArtistModel } from './artist.model';
 import { Artist } from './types/artist.types';
 
 @Injectable()
 export class ArtistService {
-  private readonly artists = new Map<string, ArtistModel>();
+  constructor(
+    @InjectRepository(ArtistModel)
+    private artistRepository: Repository<ArtistModel>,
+  ) {}
 
-  findAll() {
-    return Array.from(this.artists.values());
+  async findAll() {
+    const artists = await this.artistRepository.find();
+
+    return artists;
   }
 
-  findById(id: string) {
-    const artist = this.artists.get(id);
-    checkUserExists(artist);
+  async findById(id: string) {
+    const artist = await this.artistRepository.findOne({ where: { id } });
+
+    checkRecordExistsById(artist, id, 'Artist not found');
 
     return artist;
   }
 
-  createArtist(createArtist: Artist) {
-    const newArtist = new ArtistModel(createArtist.name, createArtist.grammy);
-    this.artists.set(newArtist.id, newArtist);
+  async createArtist(createArtist: Artist) {
+    const artist = this.artistRepository.create(createArtist);
+    const savedArtist = await this.artistRepository.save(artist);
 
-    return this.artists.get(newArtist.id);
+    return savedArtist;
   }
 
-  updateArtist(id: string, updateArtist: Artist) {
-    const artist = this.artists.get(id);
+  async updateArtist(id: string, updateArtist: Artist) {
+    const artist = await this.findById(id);
 
-    checkUserExists(artist);
+    checkRecordExistsById(artist, id, 'Artist not found');
 
-    artist.name = updateArtist.name;
-    artist.grammy = updateArtist.grammy;
+    const updatedArtist = await this.artistRepository.update(id, updateArtist);
 
-    this.artists.set(id, artist);
-
-    return this.artists.get(id);
+    return updatedArtist;
   }
-  deleteArtist(id: string) {
-    const artist = this.artists.get(id);
+  async deleteArtist(id: string) {
+    const result = await this.artistRepository.delete(id);
 
-    checkUserExists(artist);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Artist with id ${id} not found`);
+    }
 
-    return this.artists.delete(id);
+    return true;
   }
 }
