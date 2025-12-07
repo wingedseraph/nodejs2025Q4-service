@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { join } from 'node:path';
 import { AlbumModel } from './album/album.model';
 import { AlbumModule } from './album/album.module';
 import { AppController } from './app.controller';
@@ -12,6 +13,8 @@ import { TrackModel } from './track/track.model';
 import { TrackModule } from './track/track.module';
 import { UserModel } from './user/user.model';
 import { UserModule } from './user/user.module';
+
+const MIGRATION_PATH = join(__dirname, 'migrations', '*.js');
 
 @Module({
   imports: [
@@ -35,7 +38,9 @@ import { UserModule } from './user/user.module';
           TrackModel,
           FavoritesModel,
         ],
-        synchronize: true,
+        migrations: [MIGRATION_PATH],
+        migrationsRun: true,
+        synchronize: false,
       }),
     }),
   ],
