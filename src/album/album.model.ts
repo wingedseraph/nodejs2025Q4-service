@@ -1,4 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { ArtistModel } from '../artist/artist.model';
 
 @Entity('album')
 export class AlbumModel {
@@ -8,6 +15,10 @@ export class AlbumModel {
   name: string;
   @Column({ type: 'integer' })
   year: number;
+
+  @ManyToOne(() => ArtistModel, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'artistId' })
+  artist: ArtistModel | null;
   @Column({ nullable: true })
   artistId: string | null; // refers to Artist
 }
