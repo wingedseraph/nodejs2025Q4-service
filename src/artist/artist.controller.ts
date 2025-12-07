@@ -45,9 +45,9 @@ export class ArtistController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  delete(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    this.trackService.removeArtistFromTracks(id);
-    this.albumService.removeArtistFromAlbums(id);
-    this.artistService.deleteArtist(id);
+  async delete(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+    await this.trackService.removeArtistFromTracks(id);
+    await this.albumService.removeArtistFromAlbums(id);
+    await this.artistService.deleteArtist(id);
   }
 }
