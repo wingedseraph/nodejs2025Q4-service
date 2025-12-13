@@ -31,7 +31,6 @@ export class AuthService {
 
   async signup(signupDto: SignupDto) {
     const existingUser = await this.userService.findByLogin(signupDto.login);
-    // checkRecordExistsById(existingUser, signupDto.login);
     if (existingUser) {
       throw new BadRequestException('User with this login already exists');
     }
@@ -54,7 +53,6 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new ForbiddenException('Invalid login or password');
     }
-    // await comparePasswords(user.password, loginDto.password);
 
     const payload = { userId: user.id, login: user.login };
     const accessToken = this.jwtService.sign(payload);
