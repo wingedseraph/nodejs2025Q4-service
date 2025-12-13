@@ -30,8 +30,18 @@ The application runs in development mode with hot reload. Changes to files in `s
 
 ## Testing
 
+Run authentication tests (recommended first):
+
+`npm run test:auth`
+
+Run refresh token tests:
+
+`npm run test:refresh`
+
+Run all tests:
+
 `npm run test`
 
 ## Run tests inside the container
 
-`docker-compose exec app npm run test`
+`docker-compose exec app npm run test:auth`
