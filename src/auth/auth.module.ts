@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import type { StringValue } from 'ms';
 import { UserModule } from '../user/user.module';
+import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 
 const jwtConfig = {
@@ -21,6 +22,7 @@ const jwtConfig = {
       signOptions: { expiresIn: jwtConfig.accessExpiration },
     }),
   ],
+  controllers: [AuthController],
   providers: [
     AuthService,
     {

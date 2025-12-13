@@ -22,9 +22,9 @@ export async function comparePasswords(
   actualPassword: string,
   providedPassword: string,
 ) {
-  const isMatch = await compare(actualPassword, providedPassword);
+  const isMatch = await compare(providedPassword, actualPassword);
 
-  if (isMatch) {
+  if (!isMatch) {
     throw new ForbiddenException(USER_ERRORS.OLD_PASSWORD_WRONG_ERROR);
   }
 }
