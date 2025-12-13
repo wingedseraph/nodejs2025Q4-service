@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
-import { checkOldPassword, checkRecordExistsById } from '../utils/checks';
+import { checkRecordExistsById, comparePasswords } from '../utils/checks';
 import { CreateUser } from './types/create-user.types';
 import { UpdateUser } from './types/update-user.types';
 import { UserModel } from './user.model';
@@ -36,8 +37,14 @@ export class UserService {
     return this.userWithoutPassword(user);
   }
 
+  async findByLogin(login: string) {
+    return await this.userRepository.findOne({ where: { login } });
+  }
+
   async createUser(createUser: CreateUser) {
     const newUser = this.userRepository.create(createUser);
+
+    newUser.password = await bcrypt.hash(newUser.password, 10);
     const createdUser = await this.userRepository.save(newUser);
 
     return this.userWithoutPassword(createdUser);
@@ -47,9 +54,9 @@ export class UserService {
     const user = await this.userRepository.findOne({ where: { id } });
 
     checkRecordExistsById(user, id);
-    checkOldPassword(user.password, updatePassword.oldPassword);
+    await comparePasswords(user.password, updatePassword.oldPassword);
 
-    user.password = updatePassword.newPassword;
+    user.password = await bcrypt.hash(updatePassword.newPassword, 10);
     user.version = user.version + 1;
     user.updatedAt = new Date();
 
