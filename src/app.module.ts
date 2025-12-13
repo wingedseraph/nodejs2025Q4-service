@@ -7,6 +7,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ArtistModel } from './artist/artist.model';
 import { ArtistModule } from './artist/artist.module';
+import { AuthModule } from './auth/auth.module';
 import { FavoritesModel } from './favorites/favorites.model';
 import { FavoritesModule } from './favorites/favorites.module';
 import { TrackModel } from './track/track.model';
@@ -23,6 +24,7 @@ const MIGRATION_PATH = join(__dirname, 'migrations', '*.js');
     ArtistModule,
     AlbumModule,
     FavoritesModule,
+    AuthModule,
     TypeOrmModule.forRootAsync({
       useFactory: () => ({
         type: 'postgres',
