@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'node:path';
 import { AlbumModel } from './album/album.model';
@@ -7,7 +9,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ArtistModel } from './artist/artist.model';
 import { ArtistModule } from './artist/artist.module';
-import { AuthModule } from './auth/auth.module';
+import { AuthGuard } from './auth/auth.guard';
+import { AuthModule, JWT_CONFIG } from './auth/auth.module';
 import { FavoritesModel } from './favorites/favorites.model';
 import { FavoritesModule } from './favorites/favorites.module';
 import { TrackModel } from './track/track.model';
@@ -25,6 +28,10 @@ const MIGRATION_PATH = join(__dirname, 'migrations', '*.js');
     AlbumModule,
     FavoritesModule,
     AuthModule,
+    JwtModule.register({
+      secret: JWT_CONFIG.accessSecret,
+      signOptions: { expiresIn: JWT_CONFIG.accessExpiration },
+    }),
     TypeOrmModule.forRootAsync({
       useFactory: () => ({
         type: 'postgres',
@@ -47,6 +54,12 @@ const MIGRATION_PATH = join(__dirname, 'migrations', '*.js');
     }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+  ],
 })
 export class AppModule {}
