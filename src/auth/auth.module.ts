@@ -5,7 +5,7 @@ import { UserModule } from '../user/user.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 
-const jwtConfig = {
+export const JWT_CONFIG = {
   accessSecret: process.env.JWT_SECRET_KEY || '',
   accessExpiration: (process.env.JWT_ACCESS_TOKEN_EXPIRATION ||
     '1h') as StringValue,
@@ -18,8 +18,8 @@ const jwtConfig = {
   imports: [
     UserModule,
     JwtModule.register({
-      secret: jwtConfig.accessSecret,
-      signOptions: { expiresIn: jwtConfig.accessExpiration },
+      secret: JWT_CONFIG.accessSecret,
+      signOptions: { expiresIn: JWT_CONFIG.accessExpiration },
     }),
   ],
   controllers: [AuthController],
@@ -27,9 +27,9 @@ const jwtConfig = {
     AuthService,
     {
       provide: 'JWT_CONFIG',
-      useValue: jwtConfig,
+      useValue: JWT_CONFIG,
     },
   ],
-  exports: [AuthService],
+  exports: [AuthService, JwtModule],
 })
 export class AuthModule {}
