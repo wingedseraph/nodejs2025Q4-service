@@ -3,6 +3,7 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
+import { compare } from 'bcrypt';
 import { USER_ERRORS } from '../const/messages';
 
 export function checkRecordExistsById<T>(
@@ -17,13 +18,14 @@ export function checkRecordExistsById<T>(
   }
 }
 
-export function checkOldPassword(
+export async function comparePasswords(
   actualPassword: string,
   providedPassword: string,
-  errorMessage = USER_ERRORS.OLD_PASSWORD_WRONG_ERROR,
 ) {
-  if (actualPassword !== providedPassword) {
-    throw new ForbiddenException(errorMessage);
+  const isMatch = await compare(actualPassword, providedPassword);
+
+  if (isMatch) {
+    throw new ForbiddenException(USER_ERRORS.OLD_PASSWORD_WRONG_ERROR);
   }
 }
 
