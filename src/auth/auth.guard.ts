@@ -6,12 +6,14 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+import { AUTH_ERRORS } from '../const/messages';
+import { extractTokenFromHeader, verifyJwtToken } from '../utils/checks';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(private jwtService: JwtService) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  async canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest<Request>();
     const path = request.url;
 
@@ -30,23 +32,14 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    const token = this.extractTokenFromHeader(request);
+    const token = extractTokenFromHeader(request);
 
     if (!token) {
-      throw new UnauthorizedException('Access token is missing');
+      throw new UnauthorizedException(AUTH_ERRORS.TOKEN_MISSING);
     }
 
-    try {
-      await this.jwtService.verifyAsync(token);
+    await verifyJwtToken(this.jwtService, token);
 
-      return true;
-    } catch (error) {
-      throw new UnauthorizedException('Access token is invalid or expired');
-    }
-  }
-
-  private extractTokenFromHeader(request: Request) {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
+    return true;
   }
 }

@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcrypt';
 import { JwtPayload, sign, verify } from 'jsonwebtoken';
 import type { StringValue } from 'ms';
+import { AUTH_ERRORS, USER_ERRORS } from '../const/messages';
 import { UserService } from '../user/user.service';
 import { LoginDto } from './types/login.types';
 import { RefreshDto } from './types/refresh.types';
@@ -32,7 +33,7 @@ export class AuthService {
   async signup(signupDto: SignupDto) {
     const existingUser = await this.userService.findByLogin(signupDto.login);
     if (existingUser) {
-      throw new BadRequestException('User with this login already exists');
+      throw new BadRequestException(USER_ERRORS.LOGIN_ALREADY_EXISTS_ERROR);
     }
 
     const user = await this.userService.createUser({
@@ -47,11 +48,11 @@ export class AuthService {
     const user = await this.userService.findByLogin(loginDto.login);
 
     if (!user) {
-      throw new ForbiddenException('Invalid login or password');
+      throw new ForbiddenException(USER_ERRORS.NOT_FOUND_ERROR);
     }
     const isPasswordValid = await compare(loginDto.password, user.password);
     if (!isPasswordValid) {
-      throw new ForbiddenException('Invalid login or password');
+      throw new ForbiddenException(USER_ERRORS.PASSWORD_WRONG_ERROR);
     }
 
     const payload = { userId: user.id, login: user.login };
@@ -65,7 +66,7 @@ export class AuthService {
 
   async refresh(refreshToken: RefreshDto) {
     if (!refreshToken.refreshToken) {
-      throw new UnauthorizedException('Refresh token is missing');
+      throw new UnauthorizedException(AUTH_ERRORS.REFRESH_TOKEN_MISSING);
     }
 
     try {
@@ -82,7 +83,7 @@ export class AuthService {
 
       return { accessToken, refreshToken: newRefreshToken };
     } catch (error) {
-      throw new ForbiddenException('Invalid refresh token');
+      throw new ForbiddenException(AUTH_ERRORS.REFRESH_TOKEN_INVALID);
     }
   }
 }
