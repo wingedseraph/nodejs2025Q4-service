@@ -7,6 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { AUTH_ERRORS } from '../const/messages';
+import { PUBLIC_ROUTES } from '../const/routes';
 import { extractTokenFromHeader, verifyJwtToken } from '../utils/checks';
 
 @Injectable()
@@ -17,18 +18,7 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<Request>();
     const path = request.url;
 
-    if (path === '/') {
-      return true;
-    }
-
-    const publicRoutes = [
-      '/auth/signup',
-      '/auth/login',
-      '/auth/refresh',
-      '/doc',
-    ];
-
-    if (publicRoutes.some((route) => path.startsWith(route))) {
+    if (PUBLIC_ROUTES.some((route) => path.startsWith(route))) {
       return true;
     }
 
