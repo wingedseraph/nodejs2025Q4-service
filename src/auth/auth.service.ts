@@ -7,7 +7,6 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcrypt';
-import { JwtPayload, sign, verify } from 'jsonwebtoken';
 import type { StringValue } from 'ms';
 import { AUTH_ERRORS, USER_ERRORS } from '../const/messages';
 import { UserService } from '../user/user.service';
@@ -56,8 +55,9 @@ export class AuthService {
     }
 
     const payload = { userId: user.id, login: user.login };
-    const accessToken = this.jwtService.sign(payload);
-    const refreshToken = sign(payload, this.jwtConfig.refreshSecret, {
+    const accessToken = await this.jwtService.signAsync(payload);
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      secret: this.jwtConfig.refreshSecret,
       expiresIn: this.jwtConfig.refreshExpiration,
     });
 
@@ -70,14 +70,15 @@ export class AuthService {
     }
 
     try {
-      const payload = verify(
+      const payload = this.jwtService.verify<{ userId: string; login: string }>(
         refreshToken.refreshToken,
-        this.jwtConfig.refreshSecret,
-      ) as JwtPayload;
+        { secret: this.jwtConfig.refreshSecret },
+      );
 
       const newPayload = { userId: payload.userId, login: payload.login };
-      const accessToken = this.jwtService.sign(newPayload);
-      const newRefreshToken = sign(newPayload, this.jwtConfig.refreshSecret, {
+      const accessToken = await this.jwtService.signAsync(newPayload);
+      const newRefreshToken = await this.jwtService.signAsync(newPayload, {
+        secret: this.jwtConfig.refreshSecret,
         expiresIn: this.jwtConfig.refreshExpiration,
       });
 
