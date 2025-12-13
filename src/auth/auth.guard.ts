@@ -18,6 +18,10 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<Request>();
     const path = request.url;
 
+    if (path === '/') {
+      return true;
+    }
+
     if (PUBLIC_ROUTES.some((route) => path.startsWith(route))) {
       return true;
     }
